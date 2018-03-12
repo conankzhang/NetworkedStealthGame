@@ -19,7 +19,8 @@ ABlackHole::ABlackHole()
 
 	DestroySphere = CreateDefaultSubobject<USphereComponent>(TEXT("DestroySphere"));
 	DestroySphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	DestroySphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
+	DestroySphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	DestroySphere->SetCollisionResponseToChannel(ECC_PhysicsBody, ECR_Overlap);
 	DestroySphere->SetupAttachment(MeshComp);
 	DestroySphere->OnComponentBeginOverlap.AddDynamic(this, &ABlackHole::OnOverlapBegin);
 
@@ -60,5 +61,8 @@ void ABlackHole::Tick(float DeltaTime)
 
 void ABlackHole::OnOverlapBegin(UPrimitiveComponent * OverlappedComp, AActor * OtherActor, UPrimitiveComponent * OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
 {
-	OtherActor->Destroy();
+	if (OtherActor != this)
+	{
+		OtherActor->Destroy();
+	}
 }
