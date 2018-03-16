@@ -24,10 +24,6 @@ ALaunchPad::ALaunchPad()
 	LaunchPadCollision->SetupAttachment(RootComponent);
 	LaunchPadCollision->OnComponentBeginOverlap.AddDynamic(this, &ALaunchPad::OnOverlapBegin);
 
-	ArrowDecal = CreateDefaultSubobject<UDecalComponent>(TEXT("DecalComp"));
-	ArrowDecal->DecalSize = FVector(125.0f);
-	ArrowDecal->SetupAttachment(RootComponent);
-
 	LaunchPadParticles = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("LaunchPadParticles"));
 	LaunchPadParticles->SetAutoActivate(false);
 	LaunchPadParticles->SetupAttachment(RootComponent);
@@ -56,7 +52,7 @@ void ALaunchPad::OnOverlapBegin(UPrimitiveComponent * OverlappedComponent, AActo
 	}
 	else if(OtherComp && OtherComp->IsSimulatingPhysics())
 	{
-		OtherComp->AddForce(launchVector * LaunchStrength * 55, NAME_None, true);
+		OtherComp->AddImpulse(launchVector, NAME_None, true);
 		LaunchPadParticles->ActivateSystem(true);
 	}
 

@@ -33,9 +33,6 @@ protected:
 	UBoxComponent* LaunchPadCollision;
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
-	UDecalComponent* ArrowDecal;
-
-	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UParticleSystemComponent* LaunchPadParticles;
 
 	UPROPERTY(EditInstanceOnly, Category = "Gameplay")
