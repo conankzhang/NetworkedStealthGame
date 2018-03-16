@@ -20,7 +20,7 @@ public:
 	ALaunchPad();
 
 	UPROPERTY(EditAnywhere, Category = "Gameplay")
-	FVector launchVector;
+	float launchStrength;
 
 protected:
 	// Called when the game starts or when spawned
