@@ -28,7 +28,8 @@ ALaunchPad::ALaunchPad()
 	LaunchPadParticles->SetAutoActivate(false);
 	LaunchPadParticles->SetupAttachment(RootComponent);
 
-	LaunchStrength = 1000.0f;
+	LaunchStrength = 1500.0f;
+	LaunchAngle = 45.0f;
 }
 
 // Called when the game starts or when spawned
@@ -42,17 +43,19 @@ void ALaunchPad::OnOverlapBegin(UPrimitiveComponent * OverlappedComponent, AActo
 {
 	AFPSCharacter* MyCharacter = Cast<AFPSCharacter>(OtherActor);
 
-	FVector launchVector = GetActorForwardVector()*LaunchStrength;
-	launchVector.Z = LaunchStrength;
+	FRotator LaunchDirection = GetActorRotation();
+	LaunchDirection.Pitch += LaunchAngle;
+
+	FVector LaunchVelocity = LaunchDirection.Vector() * LaunchStrength;
 
 	if (MyCharacter != nullptr)
 	{
-		MyCharacter->LaunchCharacter(launchVector, true, true);
+		MyCharacter->LaunchCharacter(LaunchVelocity, true, true);
 		LaunchPadParticles->ActivateSystem(true);
 	}
 	else if(OtherComp && OtherComp->IsSimulatingPhysics())
 	{
-		OtherComp->AddImpulse(launchVector, NAME_None, true);
+		OtherComp->AddImpulse(LaunchVelocity, NAME_None, true);
 		LaunchPadParticles->ActivateSystem(true);
 	}
 

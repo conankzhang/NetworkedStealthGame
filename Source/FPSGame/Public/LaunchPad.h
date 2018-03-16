@@ -37,6 +37,9 @@ protected:
 
 	UPROPERTY(EditInstanceOnly, Category = "Gameplay")
 	float LaunchStrength;
+
+	UPROPERTY(EditInstanceOnly, Category = "Gameplay")
+	float LaunchAngle;
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
