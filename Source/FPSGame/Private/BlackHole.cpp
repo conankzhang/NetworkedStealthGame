@@ -13,23 +13,17 @@ ABlackHole::ABlackHole()
 
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
 	MeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	MeshComp->bGenerateOverlapEvents = false;
 
 	RootComponent = MeshComp;
 
 	DestroySphere = CreateDefaultSubobject<USphereComponent>(TEXT("DestroySphere"));
-	DestroySphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	DestroySphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-	DestroySphere->SetCollisionResponseToChannel(ECC_PhysicsBody, ECR_Overlap);
 	DestroySphere->SetupAttachment(MeshComp);
 	DestroySphere->OnComponentBeginOverlap.AddDynamic(this, &ABlackHole::OnOverlapBegin);
 
 	AreaOfEffectSphere = CreateDefaultSubobject<USphereComponent>(TEXT("AreaOfEffectSphere"));
-	AreaOfEffectSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	AreaOfEffectSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Overlap);
 	AreaOfEffectSphere->SetupAttachment(MeshComp);
 
-	blackHoleStrength = -5000000;
+	BlackHoleStrength = -5000000;
 }
 
 // Called when the game starts or when spawned
@@ -40,14 +34,13 @@ void ABlackHole::BeginPlay()
 
 void ABlackHole::AffectOverlappedActors()
 {
-	TSet<AActor *> ActorsToEffect;
-	AreaOfEffectSphere->GetOverlappingActors(ActorsToEffect);
-	for(AActor * actor : ActorsToEffect)
+	TArray<UPrimitiveComponent *> ComponentsToEffect;
+	AreaOfEffectSphere->GetOverlappingComponents(ComponentsToEffect);
+	for(UPrimitiveComponent * component : ComponentsToEffect)
 	{
-		UPrimitiveComponent * primitive = Cast<UPrimitiveComponent>(actor->GetRootComponent());
-		if (primitive)
+		if (component->IsSimulatingPhysics())
 		{
-			primitive->AddRadialForce(GetActorLocation(), AreaOfEffectSphere->GetScaledSphereRadius(), blackHoleStrength, ERadialImpulseFalloff::RIF_Linear);
+			component->AddRadialForce(GetActorLocation(), AreaOfEffectSphere->GetScaledSphereRadius(), BlackHoleStrength, ERadialImpulseFalloff::RIF_Linear);
 		}
 	}
 }

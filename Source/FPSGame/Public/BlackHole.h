@@ -17,9 +17,6 @@ public:
 	// Sets default values for this actor's properties
 	ABlackHole();
 
-	UPROPERTY(EditAnywhere, Category = "Gameplay")
-	float blackHoleStrength;
-
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -37,6 +34,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	USphereComponent * AreaOfEffectSphere;
+
+	UPROPERTY(EditInstanceOnly, Category = "Gameplay")
+	float BlackHoleStrength;
 
 public:	
 	// Called every frame
