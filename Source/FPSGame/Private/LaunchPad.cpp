@@ -25,7 +25,7 @@ ALaunchPad::ALaunchPad()
 	LaunchPadCollision->OnComponentBeginOverlap.AddDynamic(this, &ALaunchPad::OnOverlapBegin);
 
 	ArrowDecal = CreateDefaultSubobject<UDecalComponent>(TEXT("DecalComp"));
-	ArrowDecal->DecalSize = FVector(50.0f);
+	ArrowDecal->DecalSize = FVector(125.0f);
 	ArrowDecal->SetupAttachment(RootComponent);
 
 	LaunchPadParticles = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("LaunchPadParticles"));
@@ -46,15 +46,23 @@ void ALaunchPad::OnOverlapBegin(UPrimitiveComponent * OverlappedComponent, AActo
 {
 	AFPSCharacter* MyCharacter = Cast<AFPSCharacter>(OtherActor);
 
+	FVector launchVector = GetActorForwardVector()*launchStrength;
+	launchVector.Z = launchStrength;
+
 	if (MyCharacter != nullptr)
 	{
-		FVector launchVector = GetActorForwardVector()*launchStrength;
-		launchVector.Z = launchStrength;
 		MyCharacter->LaunchCharacter(launchVector, true, true);
-		LaunchPadParticles->ActivateSystem(true);
+	}
+	else
+	{
+		UPrimitiveComponent* primitive = Cast<UPrimitiveComponent>(OtherActor->GetRootComponent());
+		if (primitive)
+		{
+			primitive->AddForce(launchVector * launchStrength * 55);
+		}
 	}
 
-
+	LaunchPadParticles->ActivateSystem(true);
 }
 
 // Called every frame
