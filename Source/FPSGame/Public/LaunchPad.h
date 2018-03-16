@@ -19,9 +19,6 @@ public:
 	// Sets default values for this actor's properties
 	ALaunchPad();
 
-	UPROPERTY(EditAnywhere, Category = "Gameplay")
-	float launchStrength;
-
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -41,6 +38,8 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UParticleSystemComponent* LaunchPadParticles;
 
+	UPROPERTY(EditInstanceOnly, Category = "Gameplay")
+	float LaunchStrength;
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
