@@ -4,6 +4,9 @@
 #include "Perception/PawnSensingComponent.h"
 #include "DrawDebugHelpers.h"
 #include "FPSGameMode.h"
+#include "Engine/TargetPoint.h"
+#include "AIController.h"
+#include "AITypes.h"
 
 // Sets default values
 AFPSAIGuard::AFPSAIGuard()
@@ -15,6 +18,9 @@ AFPSAIGuard::AFPSAIGuard()
 
 	PawnSensingComp->OnSeePawn.AddDynamic(this, &AFPSAIGuard::OnPawnSeen);
 	PawnSensingComp->OnHearNoise.AddDynamic(this, &AFPSAIGuard::OnNoiseHeard);
+
+	currentTargetPoint = 0;
+
 }
 
 // Called when the game starts or when spawned
@@ -25,6 +31,11 @@ void AFPSAIGuard::BeginPlay()
 	OriginalRotation = GetActorRotation();
 
 	GuardState = EAIState::Idle;
+
+	AIController = Cast<AAIController>(GetController());
+	AIController->ReceiveMoveCompleted.AddDynamic(this, &AFPSAIGuard::OnMoveCompleted);
+
+	MoveToNextTargetPoint();
 }
 
 void AFPSAIGuard::OnPawnSeen(APawn * SeenPawn)
@@ -52,6 +63,7 @@ void AFPSAIGuard::OnNoiseHeard(APawn* NoiseInstigator, const FVector& Location, 
 		return; 
 	}
 
+	AIController->PauseMove(0);
 	DrawDebugSphere(GetWorld(), Location, 32.0f, 12, FColor::Green, false, 10.0f);
 
 	FVector Direction = Location - GetActorLocation();
@@ -69,6 +81,11 @@ void AFPSAIGuard::OnNoiseHeard(APawn* NoiseInstigator, const FVector& Location, 
 	SetGuardState(EAIState::Suspicious);
 }
 
+void AFPSAIGuard::OnMoveCompleted(FAIRequestID RequestID, EPathFollowingResult::Type Result)
+{
+	MoveToNextTargetPoint();
+}
+
 void AFPSAIGuard::ResetOrientation()
 {
 	if(GuardState == EAIState::Alerted)
@@ -78,6 +95,7 @@ void AFPSAIGuard::ResetOrientation()
 
 	SetActorRotation(OriginalRotation);
 	SetGuardState(EAIState::Idle);
+	AIController->ResumeMove(0);
 }
 
 void AFPSAIGuard::SetGuardState(EAIState NewState)
@@ -92,9 +110,23 @@ void AFPSAIGuard::SetGuardState(EAIState NewState)
 	OnStateChanged(GuardState);
 }
 
+void AFPSAIGuard::MoveToNextTargetPoint()
+{
+	if(targetPoints.Num() == 0)
+	{
+		return;
+	}
+
+	if(currentTargetPoint >= targetPoints.Num())
+	{
+		currentTargetPoint = 0;
+	}
+
+	AIController->MoveToActor(targetPoints[currentTargetPoint++]);
+}
+
 // Called every frame
 void AFPSAIGuard::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
