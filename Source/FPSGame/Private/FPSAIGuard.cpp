@@ -6,6 +6,7 @@
 #include "FPSGameMode.h"
 #include "Engine/TargetPoint.h"
 #include "AI/Navigation/NavigationSystem.h"
+#include "UnrealNetwork.h"
 
 // Sets default values
 AFPSAIGuard::AFPSAIGuard()
@@ -89,6 +90,11 @@ void AFPSAIGuard::ResetOrientation()
 	SetGuardState(EAIState::Idle);
 }
 
+void AFPSAIGuard::OnRep_GuardState()
+{
+	OnStateChanged(GuardState);
+}
+
 void AFPSAIGuard::SetGuardState(EAIState NewState)
 {
 	if(GuardState == NewState)
@@ -98,7 +104,7 @@ void AFPSAIGuard::SetGuardState(EAIState NewState)
 
 	GuardState = NewState;
 
-	OnStateChanged(GuardState);
+	OnRep_GuardState();
 	MoveToTargetPoint();
 }
 
@@ -131,4 +137,11 @@ void AFPSAIGuard::Tick(float DeltaTime)
 			UE_LOG(LogTemp, Warning, TEXT("great"));
 		}
 	}
+}
+
+void AFPSAIGuard::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AFPSAIGuard, GuardState);
 }
