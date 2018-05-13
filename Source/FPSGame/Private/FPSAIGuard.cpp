@@ -5,8 +5,7 @@
 #include "DrawDebugHelpers.h"
 #include "FPSGameMode.h"
 #include "Engine/TargetPoint.h"
-#include "AIController.h"
-#include "AITypes.h"
+#include "AI/Navigation/NavigationSystem.h"
 
 // Sets default values
 AFPSAIGuard::AFPSAIGuard()
@@ -32,10 +31,7 @@ void AFPSAIGuard::BeginPlay()
 
 	GuardState = EAIState::Idle;
 
-	AIController = Cast<AAIController>(GetController());
-	AIController->ReceiveMoveCompleted.AddDynamic(this, &AFPSAIGuard::OnMoveCompleted);
-
-	MoveToNextTargetPoint();
+	MoveToTargetPoint();
 }
 
 void AFPSAIGuard::OnPawnSeen(APawn * SeenPawn)
@@ -54,6 +50,7 @@ void AFPSAIGuard::OnPawnSeen(APawn * SeenPawn)
 	}
 
 	SetGuardState(EAIState::Alerted);
+	GetController()->StopMovement();
 }
 
 void AFPSAIGuard::OnNoiseHeard(APawn* NoiseInstigator, const FVector& Location, float Volume)
@@ -63,7 +60,6 @@ void AFPSAIGuard::OnNoiseHeard(APawn* NoiseInstigator, const FVector& Location, 
 		return; 
 	}
 
-	AIController->PauseMove(0);
 	DrawDebugSphere(GetWorld(), Location, 32.0f, 12, FColor::Green, false, 10.0f);
 
 	FVector Direction = Location - GetActorLocation();
@@ -79,11 +75,7 @@ void AFPSAIGuard::OnNoiseHeard(APawn* NoiseInstigator, const FVector& Location, 
 	GetWorldTimerManager().SetTimer(TimerHandle_ResetOrientation, this, &AFPSAIGuard::ResetOrientation, 3.0f);
 
 	SetGuardState(EAIState::Suspicious);
-}
-
-void AFPSAIGuard::OnMoveCompleted(FAIRequestID RequestID, EPathFollowingResult::Type Result)
-{
-	MoveToNextTargetPoint();
+	GetController()->StopMovement();
 }
 
 void AFPSAIGuard::ResetOrientation()
@@ -95,7 +87,6 @@ void AFPSAIGuard::ResetOrientation()
 
 	SetActorRotation(OriginalRotation);
 	SetGuardState(EAIState::Idle);
-	AIController->ResumeMove(0);
 }
 
 void AFPSAIGuard::SetGuardState(EAIState NewState)
@@ -108,9 +99,10 @@ void AFPSAIGuard::SetGuardState(EAIState NewState)
 	GuardState = NewState;
 
 	OnStateChanged(GuardState);
+	MoveToTargetPoint();
 }
 
-void AFPSAIGuard::MoveToNextTargetPoint()
+void AFPSAIGuard::MoveToTargetPoint()
 {
 	if(targetPoints.Num() == 0)
 	{
@@ -122,11 +114,21 @@ void AFPSAIGuard::MoveToNextTargetPoint()
 		currentTargetPoint = 0;
 	}
 
-	AIController->MoveToActor(targetPoints[currentTargetPoint++]);
+	UNavigationSystem::SimpleMoveToActor(GetController(), targetPoints[currentTargetPoint]);
 }
 
 // Called every frame
 void AFPSAIGuard::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if(targetPoints.Num() > 0)
+	{
+		if (GetDistanceTo(targetPoints[currentTargetPoint]) < 100)
+		{
+			currentTargetPoint++;
+			MoveToTargetPoint();
+			UE_LOG(LogTemp, Warning, TEXT("great"));
+		}
+	}
 }

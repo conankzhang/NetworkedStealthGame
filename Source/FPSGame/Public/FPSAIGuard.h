@@ -8,10 +8,8 @@
 
 #include "FPSAIGuard.generated.h"
 
-struct FAIRequestID;
 class UPawnSensingComponent;
 class ATargetPoint;
-class AAIController;
 
 UENUM(BlueprintType)
 enum class EAIState: uint8
@@ -39,8 +37,6 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UPawnSensingComponent* PawnSensingComp;
 
-	AAIController* AIController;
-
 	UPROPERTY(EditAnywhere, Category = "Movement")
 	TArray<ATargetPoint*> targetPoints;
 
@@ -49,9 +45,6 @@ protected:
 
 	UFUNCTION()
 	void OnNoiseHeard(APawn* NoiseInstigator, const FVector& Location, float Volume);
-
-	UFUNCTION()
-	void OnMoveCompleted(FAIRequestID RequestID, EPathFollowingResult::Type Result);
 
 	FRotator OriginalRotation;
 	FTimerHandle TimerHandle_ResetOrientation;
@@ -68,7 +61,7 @@ protected:
 
 	uint8 currentTargetPoint;
 
-	void MoveToNextTargetPoint();
+	void MoveToTargetPoint();
 
 public:	
 	// Called every frame
