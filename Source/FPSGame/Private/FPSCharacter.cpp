@@ -58,7 +58,7 @@ void AFPSCharacter::Tick(float DeltaTime)
 	{
 		FRotator NewRot = Mesh1PComponent->RelativeRotation;
 		NewRot.Pitch = RemoteViewPitch * 360.f / 255.0f;
-
+		NewRot.Pitch = FMath::ClampAngle(NewRot.Pitch, -89.0f, 89.0f);
 		CameraComponent->SetRelativeRotation(NewRot);
 	}
 }
